@@ -19,4 +19,9 @@ public interface IBooksService {
 
     Response deleteBooks(Long id, String token);
 
+    Response changeBooksQuantity(Long quantity, long bookId, String token);
+
+    Boolean verify(String token);
+
+    Response changeBooksPrice(Long price, long bookId, String token);
 }

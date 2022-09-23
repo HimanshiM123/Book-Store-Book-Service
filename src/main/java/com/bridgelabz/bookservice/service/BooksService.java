@@ -30,7 +30,7 @@ public class BooksService implements IBooksService{
     RestTemplate restTemplate;
     @Override
     public Response addBooks(BooksDTO booksDTO, String token) {
-        boolean isUserPresent = restTemplate.getForObject("http://localhost:8083/user/verify/" + token, Boolean.class);
+        boolean isUserPresent = restTemplate.getForObject("http://BS-USER-SERVICE:8083/user/verify/" + token, Boolean.class);
         if (isUserPresent) {
             Long userId = tokenUtil.decodeToken(token);
             BooksModel booksModel = new BooksModel(booksDTO);
@@ -50,7 +50,7 @@ public class BooksService implements IBooksService{
 
     @Override
     public List<BooksModel> getAllBooks(String token) {
-        boolean isUserPresent = restTemplate.getForObject("http://localhost:8083/user/verify/" + token, Boolean.class);
+        boolean isUserPresent = restTemplate.getForObject("http://BS-USER-SERVICE:8083/user/verify/" + token, Boolean.class);
         if (isUserPresent) {
             Long userId = tokenUtil.decodeToken(token);
             Optional<BooksModel> booksModel = bookRepository.findById(userId);
@@ -66,11 +66,11 @@ public class BooksService implements IBooksService{
     }
 
     @Override
-    public Response updateBooks(long id, BooksDTO booksDTO, String token) {
-        boolean isUserPresent = restTemplate.getForObject("http://localhost:8083/user/verify/" + token, Boolean.class);
+    public Response updateBooks(long bookId, BooksDTO booksDTO, String token) {
+        boolean isUserPresent = restTemplate.getForObject("http://BS-USER-SERVICE:8083/user/verify/" + token, Boolean.class);
         if (isUserPresent) {
             Long userId = tokenUtil.decodeToken(token);
-            Optional<BooksModel> booksModel = bookRepository.findById(userId);
+            Optional<BooksModel> booksModel = bookRepository.findByUserIdAndId(userId, bookId);
             if (booksModel.isPresent()){
                 booksModel.get().setBookName(booksDTO.getBookName());
                 booksModel.get().setBookAuthor(booksDTO.getBookAuthor());
@@ -86,7 +86,7 @@ public class BooksService implements IBooksService{
 
     @Override
     public Response deleteBooks(Long id, String token) {
-        boolean isUserPresent = restTemplate.getForObject("http://localhost:8083/user/verify/" + token, Boolean.class);
+        boolean isUserPresent = restTemplate.getForObject("http://BS-USER-SERVICE:8083/user/verify/" + token, Boolean.class);
         if (isUserPresent) {
             Long userId = tokenUtil.decodeToken(token);
             Optional<BooksModel> booksModel = bookRepository.findById(userId);
@@ -97,5 +97,49 @@ public class BooksService implements IBooksService{
             }
         throw new BookException(400, "Books Not Found");
     }
+
+    @Override
+    public Response changeBooksQuantity(Long quantity, long bookId, String token) {
+        boolean isUserPresent = restTemplate.getForObject("http://BS-USER-SERVICE:8083/user/verify/" + token, Boolean.class);
+        if (isUserPresent) {
+            Long userId = tokenUtil.decodeToken(token);
+            Optional<BooksModel> isBookPresent = bookRepository.findByUserIdAndId(userId, bookId);
+            if (isBookPresent.isPresent()) {
+                Long bookQuantity = isBookPresent.get().getBookQuantity() + quantity;
+                isBookPresent.get().setBookQuantity(bookQuantity);
+                bookRepository.save(isBookPresent.get());
+                return new Response("Books Added", 200, bookQuantity);
+            }
+        }
+        throw new BookException(400, "Cannot change Quantity");
+    }
+
+    @Override
+    public Response changeBooksPrice(Long price, long bookId, String token) {
+        boolean isUserPresent = restTemplate.getForObject("http://BS-USER-SERVICE:8083/user/verify/" + token, Boolean.class);
+        if (isUserPresent) {
+            Long userId = tokenUtil.decodeToken(token);
+            Optional<BooksModel> isBookPresent = bookRepository.findByUserIdAndId(userId, bookId);
+            if (isBookPresent.isPresent()){
+               Long bookPrice = isBookPresent.get().getBookQuantity() * price;
+               isBookPresent.get().setBookPrice(bookPrice);
+               bookRepository.save(isBookPresent.get());
+                return new Response("Books Added", 200, bookPrice);
+            }
+        }
+        throw new BookException(400, "Cannot Change Price");
+    }
+
+    @Override
+    public Boolean verify(String token) {
+        Long bookId = tokenUtil.decodeToken(token);
+        Optional<BooksModel> isBookPresent = bookRepository.findById(bookId);
+        if (isBookPresent.isPresent()) {
+            return true;
+        }
+        return false;
+    }
+
+
 
 }

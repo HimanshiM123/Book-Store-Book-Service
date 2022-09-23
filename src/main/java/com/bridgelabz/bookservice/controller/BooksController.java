@@ -26,8 +26,8 @@ public class BooksController {
     }
 
     @GetMapping("/getBooks/{id}")
-    ResponseEntity<Response> getBooks(@PathVariable long id){
-        Response response = booksService.getBooksById(id);
+    ResponseEntity<Response> getBooks(@PathVariable long bookId){
+        Response response = booksService.getBooksById(bookId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -38,21 +38,31 @@ public class BooksController {
     }
 
     @PutMapping("updateBooks/{id}")
-    ResponseEntity<Response> updateNotes(@Valid @RequestBody BooksDTO booksDTO, @PathVariable long id, @RequestHeader String token ){
-        Response response = booksService.updateBooks(id, booksDTO, token);
+    ResponseEntity<Response> updateNotes(@Valid @RequestBody BooksDTO booksDTO, @PathVariable long bookId, @RequestHeader String token ){
+        Response response = booksService.updateBooks(bookId, booksDTO, token);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("deleteBooks/{id}")
-    ResponseEntity<Response> deleteBooks(@PathVariable Long id, @RequestHeader String token){
+    ResponseEntity<Response> deleteBooks(@PathVariable Long bookId, @RequestHeader String token){
 
-        Response response = booksService.deleteBooks(id, token);
+        Response response = booksService.deleteBooks(bookId, token);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-//    @PutMapping("changeBooksQuantity/{id}")
-//    ResponseEntity<Response> changeBooksQuantity(@PathVariable Long quantity, @PathVariable long bookId, @RequestHeader String token ){
-//        Response response = booksService.changeBooksQuantity(quantity, bookId, token);
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
+    @GetMapping("changeBooksQuantity/{id}")
+    ResponseEntity<Response> changeBooksQuantity(@PathVariable Long quantity, @PathVariable long bookId,  @RequestHeader String token){
+        Response response = booksService.changeBooksQuantity(quantity, bookId, token);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @GetMapping("changeBooksPrice/{id}")
+    ResponseEntity<Response> changeBooksPrice(@PathVariable Long price, @PathVariable long bookId,  @RequestHeader String token){
+        Response response = booksService.changeBooksPrice(price, bookId, token);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @GetMapping("/verifyBook/{token}")
+    public Boolean verifyBook(@PathVariable String token) {
+
+        return booksService.verify(token);
+    }
 }
